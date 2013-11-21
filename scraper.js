@@ -242,10 +242,17 @@ app.get('/queue/list', function(req, res){
 });
 
 
+
+
 app.get('/home', function(req, res){
   // envoyer le code HTML directement
   res.send(require('fs').readFileSync('/home/pierre/Desktop/Javascript/webspider/views/index.html').toString());
+
 });
+
+ app.use('/public'
+, express.static(__dirname + '/public'));
+
 
 
 
@@ -322,12 +329,3 @@ readLines(input, func);
 
 
 
-
-
-
-
-
-
-
-
-function test(){alert('Oh my god they killed Kenny ! You are Bastards !');}
