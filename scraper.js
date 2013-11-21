@@ -67,7 +67,6 @@ var rl = readline.createInterface({
 *Ask the user on which URL he wants to scrape then It search the one you wrote.
 *
 **/
-
 rl.question("Which URL do you want to scrape ? ", function(answer) {
 
 	websiteToSearch = answer;
@@ -127,9 +126,6 @@ function extract_links(page_url, html_str){
 function handle_new_url(from_page_url, from_page_str, url){
   // Add the url to the queue
 var i = 0;
-    console.log("try");
-
-    console.log("nigga");
   queue.push(url);
   //verifyDouble.push(url);
   //console.log(verifyDouble[1]);
@@ -305,6 +301,14 @@ readLines(input, func);
 });
 
 
+// Quand j'utilise mon html directement en l'ouvrant via le navigateur, l'alert est bien affichée, si je lance via le serveur
+//ouvert après l'exécution de mon code, alors l'alert ne se lance plus.
+//Une fois cela résolu, je pourrais appliquer la solution sur ma zone de texte et entrer l'url directement dans
+//la page web.
+
+
+
+<<<<<<< HEAD
 
 
 
@@ -326,6 +330,6 @@ readLines(input, func);
 
 
 
-
-
-
+=======
+function test(){alert('Oh my god they killed Kenny ! You are Bastards !');}
+>>>>>>> ca4ed22ef150a38968073047bfb1cff4578748f3
