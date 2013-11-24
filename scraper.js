@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -5,7 +6,10 @@
  */
 // Instead of the default console.log, you could use your own augmented console.log !
 // var console = require('./console');
+//It permit to check if this is the first Link :
+var checkIfFirstLink = true;
 
+var scrapeCount = 0;
 // Url regexp from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 var EXTRACT_URL_REG = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
 var PORT            = 3000;
@@ -49,15 +53,7 @@ var urlSaved = "";
 // Website URL we will scrape.
 var websiteToSearch = "";
 
-//Table which permit to verify if a link have ever been read or not.
-var verifyDouble = [];
-
-var readline = require('readline');
-
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+var urlCount = 0;
 
 // I found this on http://nodejs.org/api/readline.html and I change it to make it works as I want.
 
@@ -67,6 +63,16 @@ var rl = readline.createInterface({
 *Ask the user on which URL he wants to scrape then It search the one you wrote.
 *
 **/
+
+var readline = require('readline');
+
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+var UrlScraped = [];
+
 rl.question("Which URL do you want to scrape ? ", function(answer) {
 
 	websiteToSearch = answer;
@@ -100,6 +106,7 @@ function get_page(page_url){
     }
 
     em.emit('page', page_url, html_str);
+    
   });
 }
 
@@ -121,30 +128,55 @@ function extract_links(page_url, html_str){
     em.emit('url', page_url, html_str, url);
   });
 
+var pageScraper  = {url: page_url, contenu: html_str};
+UrlScraped.push(pageScraper);
+var countUrlSaved = 0;
+// ici on scrap tout les liens trouvés
+
+// if you want to see my "interface" you just got to delete all of the queue.forEach(...) and all it's inside.
+queue.forEach(function (val) {
+if (UrlScraped.indexOf(val) === -1) { 
+  scrapeCount = scrapeCount + 1;
+get_page(val);  
+
+if (countUrlSaved > 50)
+{
+  return false;
+}
+var fs = require('fs');
+
+fs.writeFile("UrlSaved/" + countUrlSaved + ".txt", UrlScraped[countUrlSaved], function(err) {
+    if(err) {
+        console.log(err);
+    }
+});
+
+ }
+
+})
+
+
 }
 
 function handle_new_url(from_page_url, from_page_str, url){
   // Add the url to the queue
-var i = 0;
+  urlCount += 1;
+
   queue.push(url);
-  //verifyDouble.push(url);
-  //console.log(verifyDouble[1]);
 
 // I inspire me of an example for this here ==> http://stackoverflow.com/questions/2496710/writing-files-in-nodejs
 // This saved the url in savedURL.txt
 var fs = require('fs');
-console.log("wassup");
 urlSaved = urlSaved + "\n" + url;
 if (data != urlSaved){
-fs.writeFile("savedURL.txt", urlSaved, function(err) {
-    if(err) {
+fs.writeFile("UrlSaved/"+urlCount+".txt", urlSaved, function(err) {
+   if(err) {
         console.log(err);
     }else{
 
-              console.log("The file was saved!");
+              //console.log("The file was saved!");
     }
 })};
-
 
 
 
@@ -164,6 +196,8 @@ em.on('page:scraping', function(page_url){
 // Listen to events, see: http://nodejs.org/api/all.html#all_emitter_on_event_listener
 em.on('page', function(page_url, html_str){
   console.log('We got a new page!', page_url);
+  console.log(html_str);
+
 });
 
 em.on('page:error', function(page_url, error){
@@ -175,6 +209,22 @@ em.on('page', extract_links);
 em.on('url', function(page_url, html_str, url){
   console.log('We got a link! ', url);
 
+
+  if (checkIfFirstLink == true){
+
+    var fs = require('fs');
+
+  // I tried to get the htmlString of the
+
+fs.writeFile("views/" + "htmlString.html" , html_str, function(err) {
+    if(err) {
+        console.log(err);
+    }
+
+});
+
+checkIfFirstLink = false;
+}
 });
 
 em.on('url', handle_new_url);
@@ -240,9 +290,68 @@ app.get('/queue/list', function(req, res){
 
 
 
+var fs = require('fs');
+
+var pageHtml = "<html>  <head></head>  <body>    <input type='text' />    <input type = 'submit' />On which site do you want to go ?";
+
+
+fs.readdir("views",function(error,directoryObject)
+{
+for( var i in directoryObject){
+console.log(directoryObject[i]);
+pageHtml =pageHtml + "<A href = '/home/"+ directoryObject[i] + "'> "+ directoryObject[i] + " </a>";
+console.log(pageHtml);
+}
+fs.writeFile("/home/pierre/Desktop/Javascript/webspider/views/tryInterface.html", pageHtml, function(err) {
+  if(err) {
+        console.log(err);
+    }else{
+
+              //console.log("The file was saved!");
+    }
+
+});
+});
+
+console.log("wassup");
+
+
+
+
+console.log("wassup");
+urlSaved = urlSaved;
+if (data != urlSaved){
+fs.writeFile("UrlSaved/tryInterface.html", pageHtml, function(err) {
+    if(err) {
+        console.log(err);
+    }else{
+
+              //console.log("The file was saved!");
+    }
+})};
+
+
+
+
+
 app.get('/home', function(req, res){
   // envoyer le code HTML directement
-  res.send(require('fs').readFileSync('/home/pierre/Desktop/Javascript/webspider/views/index.html').toString());
+
+ 
+//list all the file in a directory, found there ==> http://webparaiso.free.fr/blog/?p=180
+
+  var fs = require("fs");
+
+
+fs.readdir("views",function(error,directoryObject)
+{
+for( var i in directoryObject){
+console.log(directoryObject[i]);
+}
+});
+res.send(require('fs').readFileSync('/home/pierre/Desktop/Javascript/webspider/views/htmlString.html').toString());
+
+
 
 });
 
@@ -264,6 +373,10 @@ get_page(websiteToSearch);
 
 var fs = require('fs');
 var data = "";
+
+// useless function that I tried to read all the link, but I don't go as far as I want ( Ok I go no where with my interface)
+// but it should have permit me to stocked and read all the links I got in my .txt files.
+
 function readLines(input, func) {
   var remaining = '';
 
@@ -291,45 +404,6 @@ function func(data) {
   //console.log('Line: ' + data);
 }
 
-var input = fs.createReadStream('savedURL.txt');
-readLines(input, func);
-
-
-
 
   rl.close();
 });
-
-
-// Quand j'utilise mon html directement en l'ouvrant via le navigateur, l'alert est bien affichée, si je lance via le serveur
-//ouvert après l'exécution de mon code, alors l'alert ne se lance plus.
-//Une fois cela résolu, je pourrais appliquer la solution sur ma zone de texte et entrer l'url directement dans
-//la page web.
-
-
-
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-function test(){alert('Oh my god they killed Kenny ! You are Bastards !');}
->>>>>>> ca4ed22ef150a38968073047bfb1cff4578748f3
