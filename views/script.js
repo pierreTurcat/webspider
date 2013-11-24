@@ -1,1 +1,0 @@
-function test(){alert('Oh my god they killed Kenny ! You are Bastards !');}
